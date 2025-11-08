@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Trio Games — Jogos do Otavio</title>
+<style>
+  :root{
+    --bg:#070712;
+    --card:#0f1724;
+    --accent:#1e90ff;
+    --accent-2:#ffd35c;
+    --glass: rgba(255,255,255,0.03);
+    --text:#eaf2ff;
+    --danger:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:linear-gradient(180deg,#020204, #071229 60%); color:var(--text);
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+
+  .wrap{max-width:1100px;margin:18px auto;padding:18px;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:1.4rem;color:var(--accent)}
+  .subtitle{color:#cfe7ff;opacity:0.9;font-size:0.95rem}
+
+  /* settings panel */
+  .panel{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px; padding:14px; border:1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  }
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  label{font-weight:600;color:#dfeeff}
+  input[type="text"]{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text)}
+  button{background:var(--accent);border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+  button.secondary{background:transparent;border:2px solid rgba(255,255,255,0.04);color:var(--text)}
+  small{color:#9fb8df}
+
+  nav{margin:14px 0;display:flex;gap:8px;flex-wrap:wrap}
+  .tab{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer;border:1px solid rgba(255,255,255,0.02)}
+  .tab.active{background:linear-gradient(90deg,var(--accent) 0%, #7fb8ff 100%);color:#021; font-weight:800}
+
+  main{margin-top:14px}
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:16px}
+  @media (max-width:920px){ .grid{grid-template-columns:1fr} }
+
+  /* Left content */
+  .card{background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+  .game-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+
+  /* Pega o Otavio */
+  .arena{height:360px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:10px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+  .target{
+    position:absolute;width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;
+    user-select:none;border:4px solid rgba(255,255,255,0.06);
+    background: linear-gradient(180deg,var(--accent), #6ab7ff);
+    box-shadow: 0 8px 20px rgba(30,144,255,0.16);
+    transform: translate(-50%,-50%);
+  }
+  .hud{display:flex;gap:12px;align-items:center}
+  .hud .stat{background:var(--glass);padding:8px 12px;border-radius:10px;font-weight:800;color:#fff}
+
+  /* Memory */
+  .memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .card-mem{background:linear-gradient(180deg,#0b1220,#091021);border-radius:10px;height:90px;display:flex;align-items:center;justify-content:center;font-size:34px;color:transparent;cursor:pointer;user-select:none;border:2px solid rgba(255,255,255,0.03)}
+  .card-mem.revealed{color:var(--text);background:linear-gradient(180deg,#142033,#0f1724)}
+  .card-mem.matched{background:linear-gradient(90deg,var(--accent), var(--accent-2));color:#021;font-weight:900;cursor:default;border:2px solid rgba(255,255,255,0.02)}
+
+  /* right panel */
+  aside .panel-title{font-weight:800;color:var(--accent);margin-bottom:6px}
+  .players{display:flex;flex-direction:column;gap:8px}
+  .player {display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)}
+  .player strong{color:var(--accent-2)}
+  .leaderboard{margin-top:12px}
+
+  footer{margin-top:18px;text-align:center;color:#9fb8df;font-size:13px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Trio Games — Mini-Jogos</h1>
+        <div class="subtitle">Escolha um jogo e desafie seus amigos. Salve o placar localmente.</div>
+      </div>
+
+      <div class="panel" style="min-width:260px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div>
+            <label for="p1">Jogador 1</label><br>
+            <input id="p1" type="text" placeholder="Otavio" value="Otavio">
+          </div>
+          <div>
+            <label for="p2">Jogador 2</label><br>
+            <input id="p2" type="text" placeholder="Amigo 1" value="Amigo1">
+          </div>
+          <div>
+            <label for="p3">Jogador 3</label><br>
+            <input id="p3" type="text" placeholder="Amigo 2" value="Amigo2">
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
+          <button id="saveNames">Salvar nomes</button>
+          <button id="resetScores" class="secondary">Limpar scores</button>
+        </div>
+        <small>Os nomes e placares ficam no seu navegador (local).</small>
+      </div>
+    </header>
+
+    <nav>
+      <div class="tab active" data-tab="game1">Pega o Otavio</div>
+      <div class="tab" data-tab="game2">Memória</div>
+      <div class="tab" data-tab="scores">Placar</div>
+    </nav>
+
+    <main>
+      <div class="grid">
+        <!-- Left: games -->
+        <div>
+          <!-- GAME 1 -->
+          <section id="game1" class="card">
+            <div class="game-header">
+              <div>
+                <h2>Pega o Otavio</h2>
+                <div class="subtitle">Clique no avatar antes que ele fuja! Tempo: <strong id="g1-timer">30</strong>s</div>
+              </div>
+              <div class="hud">
+                <div class="stat">Jogador: <span id="g1-player">Otavio</span></div>
+                <div class="stat">Pontuação: <span id="g1-score">0</span></div>
+                <div class="stat">Recorde: <span id="g1-best">0</span></div>
+              </div>
+            </div>
+
+            <div class="arena" id="arena">
+              <!-- target será inserido aqui -->
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+              <label>Tempo (s): <input id="g1-time-input" type="number" value="30" style="width:80px;margin-left:6px"></label>
+              <button id="g1-start">Iniciar</button>
+              <button id="g1-stop" class="secondary">Parar</button>
+              <button id="g1-reset" class="secondary">Reiniciar</button>
+            </div>
+          </section>
+
+          <!-- GAME 2 -->
+          <section id="game2" class="card" style="margin-top:16px;display:none">
+            <div class="game-header">
+              <div>
+                <h2>Jogo da Memória</h2>
+                <div class="subtitle">Combine pares com o menor número de tentativas.</div>
+              </div>
+              <div class="hud">
+                <div class="stat">Jogador: <span id="g2-player">Otavio</span></div>
+                <div class="stat">Tempo: <span id="g2-time">0</span>s</div>
+                <div class="stat">Movimentos: <span id="g2-moves">0</span></div>
+              </div>
+            </div>
+
+            <div id="memory-board" class="memory-grid">
+              <!-- cartas geradas via JS -->
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button id="g2-start">Novo Jogo</button>
+              <button id="g2-shuffle" class="secondary">Embaralhar</button>
+              <button id="g2-reset" class="secondary">Reiniciar Score</button>
+            </div>
+          </section>
+
+          <!-- SCORES (visual) -->
+          <section id="scores" class="card" style="margin-top:16px;display:none">
+            <h2>Placares Salvos</h2>
+            <div id="saved-scores">Nenhum placar ainda.</div>
+            <div style="margin-top:12px">
+              <button id="exportScores">Exportar placares (JSON)</button>
+              <button id="importScores" class="secondary">Importar (colar JSON)</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right: painel lateral -->
+        <aside>
+          <div class="panel card">
+            <div class="panel-title">Jogadores</div>
+            <div class="players" id="players-list">
+              <!-- lista preenchida por JS -->
+            </div>
+
+            <div class="leaderboard card" style="margin-top:12px">
+              <div class="panel-title">Melhores (Pega o Otavio)</div>
+              <div id="leaderboard-g1">—</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="panel-title">Como jogar</div>
+            <ol style="color:#cfe7ff">
+              <li>Salve os nomes dos 3 jogadores.</li>
+              <li>Escolha um jogo na barra acima.</li>
+              <li>Para "Pega o Otavio": clique no círculo azul quando ele aparecer.</li>
+              <li>Para "Memória": encontre pares. Menos movimentos = melhor.</li>
+            </ol>
+            <small>Os placares são salvos no seu navegador e só ficam visíveis nesse dispositivo.</small>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer>
+      Desenvolvido para você e seus amigos — divirtam-se! 🎮
+    </footer>
+  </div>
+
+<script>
+/* ------------------------
+   Utilidades / Storage
+   ------------------------ */
+const LS = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+};
+
+const nameInputs = {
+  p1: document.getElementById('p1'),
+  p2: document.getElementById('p2'),
+  p3: document.getElementById('p3'),
+};
+
+const playersList = document.getElementById('players-list');
+
+/* carrega nomes salvos */
+function loadNames(){
+  const saved = LS.get('trio_names') || {p1:'Otavio',p2:'Amigo1',p3:'Amigo2'};
+  nameInputs.p1.value = saved.p1;
+  nameInputs.p2.value = saved.p2;
+  nameInputs.p3.value = saved.p3;
+  renderPlayers();
+}
+function saveNames(){
+  const obj = {p1:nameInputs.p1.value||'P1', p2:nameInputs.p2.value||'P2', p3:nameInputs.p3.value||'P3'};
+  LS.set('trio_names', obj);
+  renderPlayers();
+  alert('Nomes salvos!');
+}
+document.getElementById('saveNames').addEventListener('click', saveNames);
+
+/* reset scores */
+document.getElementById('resetScores').addEventListener('click', ()=>{
+  if(confirm('Limpar todos os placares locais?')){ localStorage.removeItem('trio_scores'); localStorage.removeItem('g1-best'); updateSavedScores(); alert('Placar limpo.'); }
+});
+
+/* render players no painel direito */
+function renderPlayers(){
+  const names = LS.get('trio_names') || {p1:'Otavio',p2:'Amigo1',p3:'Amigo2'};
+  playersList.innerHTML = '';
+  ['p1','p2','p3'].forEach(k=>{
+    const div = document.createElement('div'); div.className='player';
+    div.innerHTML = `<div><strong>${names[k]}</strong></div><div><small>—</small></div>`;
+    playersList.appendChild(div);
+  });
+  // atualizar campos do jogo
+  document.getElementById('g1-player').textContent = names.p1;
+  document.getElementById('g2-player').textContent = names.p1;
+}
+loadNames();
+
+/* ------------------------
+   Tabs
+   ------------------------ */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const tab = t.dataset.tab;
+    ['game1','game2','scores'].forEach(id=>{
+      document.getElementById(id).style.display = (id===tab)?'block':'none';
+    });
+    if(tab==='scores') updateSavedScores();
+  });
+});
+
+/* ------------------------
+   GAME 1 — Pega o Otavio
+   ------------------------ */
+const arena = document.getElementById('arena');
+let g1TimerEl = document.getElementById('g1-timer');
+let g1TimeInput = document.getElementById('g1-time-input');
+let g1StartBtn = document.getElementById('g1-start');
+let g1StopBtn = document.getElementById('g1-stop');
+let g1ResetBtn = document.getElementById('g1-reset');
+let g1ScoreEl = document.getElementById('g1-score');
+let g1BestEl = document.getElementById('g1-best');
+
+let g1Interval = null;
+let g1CountDown = 30;
+let g1Score = 0;
+let targetEl = null;
+
+function randomPos(size=84){
+  const padding = 10;
+  const w = arena.clientWidth;
+  const h = arena.clientHeight;
+  const x = Math.random()*(w - size - padding*2) + padding + size/2;
+  const y = Math.random()*(h - size - padding*2) + padding + size/2;
+  return {x,y};
+}
+
+function spawnTarget(){
+  if(!targetEl){
+    targetEl = document.createElement('div');
+    targetEl.className = 'target';
+    targetEl.innerHTML = '🎯';
+    arena.appendChild(targetEl);
+    targetEl.addEventListener('click', ()=>{
+      g1Score++;
+      g1ScoreEl.textContent = g1Score;
+      // pequeno efeito
+      targetEl.style.transform = 'translate(-50%,-50%) scale(0.9)';
+      setTimeout(()=> targetEl.style.transform = 'translate(-50%,-50%) scale(1)', 100);
+    });
+  }
+  const pos = randomPos();
+  targetEl.style.left = pos.x+'px';
+  targetEl.style.top = pos.y+'px';
+}
+
+function startGame1(){
+  // reset
+  clearInterval(g1Interval);
+  g1Score = 0; g1ScoreEl.textContent = '0';
+  g1CountDown = parseInt(g1TimeInput.value) || 30; g1TimerEl.textContent = g1CountDown;
+  // spawn e mover
+  spawnTarget();
+  g1Interval = setInterval(()=>{
+    spawnTarget();
+  }, 800); // move a cada 800ms
+  // countdown
+  const cd = setInterval(()=> {
+    g1CountDown--;
+    g1TimerEl.textContent = g1CountDown;
+    if(g1CountDown<=0){
+      clearInterval(cd);
+      stopGame1();
+    }
+  }, 1000);
+  // armazenar intervalo de respawn também (guardado em g1Interval)
+}
+
+function stopGame1(){
+  clearInterval(g1Interval);
+  g1Interval = null;
+  if(targetEl){ targetEl.remove(); targetEl=null; }
+  // salvar recorde
+  const names = LS.get('trio_names') || {p1:'Otavio',p2:'Amigo1',p3:'Amigo2'};
+  const player = names.p1;
+  const bestKey = 'g1-best';
+  const bestSaved = LS.get(bestKey) || {name:player,score:0};
+  if(g1Score > (bestSaved.score||0)){
+    LS.set(bestKey, {name:player,score:g1Score});
+    alert('Novo recorde! '+g1Score+' pontos.');
+  } else {
+    alert('Fim! Você fez '+g1Score+' pontos.');
+  }
+  updateLeaderboard();
+}
+
+g1StartBtn.addEventListener('click', startGame1);
+g1StopBtn.addEventListener('click', stopGame1);
+g1ResetBtn.addEventListener('click', ()=>{
+  clearInterval(g1Interval);
+  g1Interval=null;
+  if(targetEl){ targetEl.remove(); targetEl=null; }
+  g1Score=0; g1ScoreEl.textContent='0';
+  g1TimerEl.textContent = parseInt(g1TimeInput.value)||30;
+});
+
+/* leaderboard / saved */
+function updateLeaderboard(){
+  const best = LS.get('g1-best') || {name:'—',score:0};
+  g1BestEl.textContent = (best.score||0);
+  document.getElementById('leaderboard-g1').textContent = `${best.name} — ${best.score} pts`;
+}
+
+/* load initial */
+updateLeaderboard();
+
+/* ------------------------
+   GAME 2 — Memória
+   ------------------------ */
+const memoryBoard = document.getElementById('memory-board');
+const g2Start = document.getElementById('g2-start');
+const g2Shuffle = document.getElementById('g2-shuffle');
+const g2Reset = document.getElementById('g2-reset');
+const g2TimeEl = document.getElementById('g2-time');
+const g2MovesEl = document.getElementById('g2-moves');
+
+let memEmojis = ['🎻','🎸','🥁','🎷','🎺','🎹','🎧','🎤']; // 8 pares -> 16 cartas
+let memDeck = [];
+let memFirst = null, memSecond = null, memLocked=false;
+let memMatches = 0, memMoves=0;
+let memTimer=null, memSeconds=0, memRunning=false;
+
+function buildDeck(){
+  memDeck = [...memEmojis, ...memEmojis]; // duplicar
+  // shuffle
+  for(let i=memDeck.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [memDeck[i], memDeck[j]] = [memDeck[j], memDeck[i]];
+  }
+}
+
+function renderMemory(){
+  memoryBoard.innerHTML = '';
+  memDeck.forEach((sym,i)=>{
+    const c = document.createElement('div');
+    c.className='card-mem';
+    c.dataset.idx = i;
+    c.innerHTML = `<span class="face">${sym}</span>`;
+    c.addEventListener('click', ()=> handleCardClick(c, sym));
+    memoryBoard.appendChild(c);
+  });
+}
+
+function startMemory(){
+  // reset
+  clearInterval(memTimer);
+  memSeconds=0; memMatches=0; memMoves=0; memFirst=null; memSecond=null; memLocked=false; memRunning=true;
+  g2TimeEl.textContent='0'; g2MovesEl.textContent='0';
+  buildDeck();
+  renderMemory();
+  memTimer = setInterval(()=>{ memSeconds++; g2TimeEl.textContent = memSeconds; }, 1000);
+}
+
+function revealCard(el){
+  if(el.classList.contains('revealed') || el.classList.contains('matched')) return;
+  el.classList.add('revealed');
+}
+
+function hideCard(el){
+  el.classList.remove('revealed');
+}
+
+function handleCardClick(el, sym){
+  if(memLocked || el.classList.contains('revealed') || el.classList.contains('matched')) return;
+  revealCard(el);
+  if(!memFirst){ memFirst = {el,sym}; return; }
+  memSecond = {el,sym};
+  memMoves++;
+  g2MovesEl.textContent = memMoves;
+  // check match
+  if(memFirst.sym === memSecond.sym){
+    memFirst.el.classList.add('matched');
+    memSecond.el.classList.add('matched');
+    memMatches++;
+    memFirst = memSecond = null;
+    if(memMatches === memEmojis.length){
+      // ganhou
+      clearInterval(memTimer); memRunning=false;
+      setTimeout(()=> {
+        alert(`Parabéns! Você terminou em ${memMoves} movimentos e ${memSeconds}s.`);
+      }, 300);
+    }
+  } else {
+    memLocked = true;
+    setTimeout(()=>{ hideCard(memFirst.el); hideCard(memSecond.el); memFirst = memSecond = null; memLocked=false; }, 700);
+  }
+}
+
+g2Start.addEventListener('click', startMemory);
+g2Shuffle.addEventListener('click', ()=>{ buildDeck(); renderMemory(); });
+g2Reset.addEventListener('click', ()=>{ localStorage.removeItem('trio_mem_best'); alert('Score de memória limpo.'); });
+
+/* ------------------------
+   Scores view / export
+   ------------------------ */
+function updateSavedScores(){
+  const saved = JSON.stringify(localStorage);
+  const el = document.getElementById('saved-scores');
+  const g1best = LS.get('g1-best') || null;
+  el.innerHTML = '';
+  if(g1best){ el.innerHTML += `<div><strong>Pega o Otavio:</strong> ${g1best.name} — ${g1best.score} pts</div>`; }
+  else el.innerHTML = '<div>Nenhum placar salvo.</div>';
+}
+
+document.getElementById('exportScores').addEventListener('click', ()=>{
+  const data = JSON.stringify(localStorage);
+  prompt('Copie o JSON abaixo (Ctrl+C):', data);
+});
+
+document.getElementById('importScores').addEventListener('click', ()=>{
+  const json = prompt('Cole aqui o JSON para importar:');
+  if(!json) return;
+  try{
+    const obj = JSON.parse(json);
+    Object.keys(obj).forEach(k=> localStorage.setItem(k, obj[k]));
+    alert('Importado! Recarregue a página.');
+  }catch(e){ alert('JSON inválido.'); }
+});
+
+/* inicializações */
+updateSavedScores();
+renderPlayers();
+startMemory(); // inicia memória pra mostrar o tab pronto
+</script>
+</body>
+  </html>
