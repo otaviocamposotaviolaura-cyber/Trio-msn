@@ -1,180 +1,237 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Biografia - Otavio André Campos</title>
-
-<style>
-    /* ----- Tema geral ----- */
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: #1a1a1a;
-        color: white;
-        scroll-behavior: smooth;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conquistas do Otavio</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#06b6d4;
+      --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.03);
     }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,var(--bg), #071021 120%);
+      color:#e6eef6;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:28px;
+    }header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px;
+}
+h1{
+  margin:0;
+  font-size:28px;
+  letter-spacing:0.3px;
+}
+.subtitle{color:var(--muted); font-size:14px}
 
-    /* ----- Animações ----- */
-    .fade {
-        opacity: 0;
-        transform: translateY(20px);
-        transition: 0.9s ease;
-    }
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:14px;
+}
 
-    .show {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.04);
+  padding:12px;
+  border-radius:12px;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+  transition:transform .12s ease, box-shadow .12s ease;
+  min-height:100px;
+  display:flex;
+  flex-direction:column;
+}
+.card:hover{transform:translateY(-6px); box-shadow:0 10px 28px rgba(2,6,23,0.7)}
 
-    /* Foto animada */
-    .foto {
-        width: 180px;
-        height: 180px;
-        background: #333;
-        border-radius: 50%;
-        margin-bottom: 20px;
-        opacity: 0;
-        transform: scale(0.6);
-        transition: 1s ease;
-    }
+.card-head{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.card-title{
+  font-weight:600; font-size:15px;
+}
+.card-controls{display:flex; gap:6px; align-items:center}
+button{background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:6px 8px; border-radius:8px; cursor:pointer}
+button.primary{background:var(--accent); color:#06202a; border:0}
 
-    .foto.show {
-        opacity: 1;
-        transform: scale(1);
-    }
+.content{margin-top:10px; color:#dfeef7; font-size:14px; line-height:1.35}
+textarea{
+  width:100%; min-height:80px; resize:vertical; border-radius:8px; border:1px solid rgba(255,255,255,0.06); padding:8px; background:transparent; color:inherit; font-family:inherit;
+}
+.hint{font-size:12px; color:var(--muted); margin-top:8px}
 
-    /* ----- Menu ----- */
-    nav {
-        background: #2a2a2a;
-        padding: 15px;
-        display: flex;
-        gap: 20px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        opacity: 0;
-        transform: translateY(-20px);
-        transition: 1s ease;
-    }
+footer{margin-top:18px; color:var(--muted); font-size:13px}
 
-    nav.show {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* responsivo */
+@media (max-width:420px){
+  h1{font-size:20px}
+  .grid{grid-template-columns:1fr}
+}
 
-    nav a {
-        color: #ddd;
-        text-decoration: none;
-        font-size: 18px;
-        transition: 0.2s;
-    }
-
-    nav a:hover {
-        color: #fff;
-    }
-
-    /* ----- Seções ----- */
-    section {
-        max-width: 900px;
-        margin: auto;
-        padding: 40px 20px;
-        border-bottom: 1px solid #333;
-    }
-
-    h1, h2 {
-        color: #e6e6e6;
-    }
-</style>
+  </style>
 </head>
 <body>
+  <header>
+    <div>
+      <h1>Conquistas do Otavio</h1>
+      <div class="subtitle">Clique em cada caixinha para ver, editar e salvar sua conquista.</div>
+    </div>
+    <div>
+      <button id="resetBtn" title="Restaurar valores padrão">Restaurar padrões</button>
+    </div>
+  </header>  <main>
+    <div class="grid" id="grid">
+      <!-- 10 caixas serão geradas por JavaScript -->
+    </div><div class="hint">As conquistas são salvas no seu navegador (localStorage). Se quiser que outra pessoa edite, basta enviar o arquivo HTML.</div>
+<footer>Feito pra Otavio — editável e salvo localmente.</footer>
 
-<!-- MENU -->
-<nav id="menu">
-    <a href="#inicio">Início</a>
-    <a href="#biografia">Biografia</a>
-    <a href="#familia">Família</a>
-    <a href="#violino">Violino</a>
-    <a href="#fe">Fé</a>
-</nav>
+  </main>  <script>
+    const DEFAULTS = [
+      '1. Primeiro ensaio no violino',
+      '2. Participação no culto da mocidade',
+      '3. Conquista escolar importante',
+      '4. Projeto concluído com a turma',
+      '5. Vídeo que chegou aos 1000 views',
+      '6. Aprender uma música nova',
+      '7. Ajudar alguém da congregação',
+      '8. Mostrar coragem no palco',
+      '9. Completar um desafio pessoal',
+      '10. Alcançar um objetivo de estudo'
+    ];
 
-<!-- INÍCIO -->
-<section id="inicio" class="fade">
-    <h1>Bem-vindo ao site do Otavio</h1>
-    <p>Aqui você encontra minha história, minha fé, minha música e minha família.</p>
-</section>
+    const grid = document.getElementById('grid');
+    const resetBtn = document.getElementById('resetBtn');
 
-<!-- BIOGRAFIA -->
-<section id="biografia" class="fade">
+    function createCard(index, text){
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.dataset.index = index;
 
-    <h1>Biografia</h1>
-<div class="foto" id="foto" style="background-image: url('https://github.com/otaviocamposotaviolaura-cyber/Trio-msn/blob/main/IMG-20251029-WA0034.jpg'); background-size: cover; background-position: center;"></div>
-    <p><strong>Nome:</strong> Otavio André Campos</p>
-    <p><strong>Idade:</strong> 14 anos</p>
-    <p><strong>Nascimento:</strong> 15/02/2011 em Engenheiro Beltrão</p>
-    <p><strong>Moro atualmente em:</strong> Maringá</p>
-    <p><strong>Estuda na escola:</strong> Marco Antônio Pimenta</p>
-    <p><strong>Peso:</strong> 77 kg</p>
-    <p><strong>Altura:</strong> 1,70 m</p>
-</section>
+      const head = document.createElement('div'); head.className = 'card-head';
+      const title = document.createElement('div'); title.className = 'card-title';
+      title.textContent = `Conquista ${index + 1}`;
 
-<!-- FAMÍLIA -->
-<section id="familia" class="fade">
-    <h1>Minha Família</h1>
+      const controls = document.createElement('div'); controls.className = 'card-controls';
+      const toggleBtn = document.createElement('button'); toggleBtn.textContent = 'Abrir';
+      const editBtn = document.createElement('button'); editBtn.textContent = 'Editar';
+      const saveBtn = document.createElement('button'); saveBtn.textContent = 'Salvar'; saveBtn.style.display = 'none';
 
-    <p><strong>Mãe:</strong> Juliana Fernanda Campos</p>
-    <p><strong>Pai:</strong> Fernando André de Campos</p>
-    <p><strong>Irmã:</strong> Laura Fernanda Campos</p>
-</section>
+      controls.appendChild(toggleBtn);
+      controls.appendChild(editBtn);
+      controls.appendChild(saveBtn);
 
-<!-- VIOLINO -->
-<section id="violino" class="fade">
-    <h1>Minha vida musical</h1>
+      head.appendChild(title);
+      head.appendChild(controls);
 
-    <p>Toco violino e estudo música com dedicação.</p>
-    <p>Comecei minha jornada e hoje estou no nível intermediário.</p>
-    <p>Meu instrumento é um Eagle VK644.</p>
-    <p>Também estudo todos os dias nos horários certos para evoluir sempre.</p>
-</section>
+      const content = document.createElement('div'); content.className = 'content';
+      const p = document.createElement('div'); p.className = 'viewText';
+      p.textContent = text || '';
 
-<!-- FÉ -->
-<section id="fe" class="fade">
-    <h1>igreja</h1></h1>
+      const ta = document.createElement('textarea'); ta.className = 'editText'; ta.value = text || '';
+      ta.style.display = 'none';
 
-    <p>Sou da <strong>Congregação Cristã no Brasil (CCB)</strong>, onde aprendi valores, respeito, amor e comunhão.</p>
+      content.appendChild(p);
+      content.appendChild(ta);
 
-    <p>Atualmente participo dos cultos de jovens e tenho a oportunidade de <strong>tocar violino para Deus</strong>, o que é uma grande bênção.</p>
+      card.appendChild(head);
+      card.appendChild(content);
 
-    <h2>Versículo que gosto</h2>
-    <p><em>Jesus chorou</em></p>
-</section>
+      // comportamento
+      toggleBtn.addEventListener('click', ()=>{
+        const open = p.style.display === '' || p.style.display === 'block';
+        if(open){
+          // abrir (mostrar texto)
+          p.style.display = 'block';
+          ta.style.display = 'none';
+          saveBtn.style.display = 'none';
+          editBtn.style.display = 'inline-block';
+          toggleBtn.textContent = 'Fechar';
+        } else {
+          p.style.display = 'block';
+          toggleBtn.textContent = 'Fechar';
+        }
+        // alternativa: se já aberto, fecha
+        if(toggleBtn.textContent === 'Fechar' && p.style.display === 'block'){
+          // quando clica em fechar: fechar
+        }
+      });
 
-<script>
-    // Mostrar o menu
-    setTimeout(() => {
-        document.getElementById("menu").classList.add("show");
-    }, 200);
+      // Simplifica: clicar em abrir/fechar alterna visibilidade
+      toggleBtn.addEventListener('click', ()=>{
+        const isOpen = p.style.display === 'block';
+        if(isOpen){
+          p.style.display = 'none';
+          ta.style.display = 'none';
+          saveBtn.style.display = 'none';
+          editBtn.style.display = 'inline-block';
+          toggleBtn.textContent = 'Abrir';
+        } else {
+          p.style.display = 'block';
+          toggleBtn.textContent = 'Fechar';
+        }
+      });
 
-    // Animações quando aparecem
-    const elementos = document.querySelectorAll(".fade");
+      editBtn.addEventListener('click', ()=>{
+        p.style.display = 'none';
+        ta.style.display = 'block';
+        ta.focus();
+        saveBtn.style.display = 'inline-block';
+        editBtn.style.display = 'none';
+        toggleBtn.textContent = 'Fechar';
+      });
 
-    function aparecer() {
-        elementos.forEach(el => {
-            const topo = el.getBoundingClientRect().top;
-            if (topo < window.innerHeight - 100) {
-                el.classList.add("show");
-            }
-        });
+      saveBtn.addEventListener('click', ()=>{
+        const newVal = ta.value.trim();
+        p.textContent = newVal || '(vazio)';
+        p.style.display = 'block';
+        ta.style.display = 'none';
+        saveBtn.style.display = 'none';
+        editBtn.style.display = 'inline-block';
+        saveToStorage(index, newVal);
+      });
+
+      // double-click para editar rápido
+      p.addEventListener('dblclick', ()=> editBtn.click());
+
+      return card;
     }
 
-    window.addEventListener("scroll", aparecer);
-    aparecer();
+    function saveToStorage(i, text){
+      localStorage.setItem('conquista-' + i, text);
+    }
+    function loadFromStorage(i){
+      return localStorage.getItem('conquista-' + i);
+    }
 
-    // Foto animada
-    window.addEventListener("load", () => {
-        document.getElementById("foto").classList.add("show");
+    function build(){
+      grid.innerHTML = '';
+      for(let i=0;i<10;i++){
+        const stored = loadFromStorage(i);
+        const text = stored !== null ? stored : DEFAULTS[i] || '';
+        const card = createCard(i, text);
+        grid.appendChild(card);
+      }
+    }
+
+    resetBtn.addEventListener('click', ()=>{
+      if(confirm('Restaurar todas as conquistas para os valores padrão?')){
+        for(let i=0;i<10;i++) localStorage.removeItem('conquista-' + i);
+        build();
+      }
     });
-</script>
 
-</body>
-  </html>
+    // primeiro carregamento
+    build();
+  </script></body>
+    </html>
