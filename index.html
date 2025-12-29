@@ -1,13 +1,164 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ping Pong Game</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Ping Pong Mobile</title>
+<style>
+    body {
+        margin: 0;
+        background: #003300;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        touch-action: none; /* Impede a tela de rolar */
+    }
+
+    canvas {
+        background: #0b5e0b;
+        border: 8px solid #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 0 40px #000;
+    }
+</style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
-    <script src="script.js"></script>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+// Responsivo pro celular
+const canvas = document.getElementById("gameCanvas");
+canvas.width = window.innerWidth * 0.95;
+canvas.height = window.innerHeight * 0.8;
+const ctx = canvas.getContext("2d");
+
+// Raquetes
+const paddleWidth = 18;
+const paddleHeight = canvas.height * 0.18;
+
+let playerY = canvas.height / 2 - paddleHeight / 2;
+let botY = playerY;
+
+// Bola
+let ballX = canvas.width / 2;
+let ballY = canvas.height / 2;
+let ballSize = canvas.width * 0.015;
+let ballSpeedX = 5;
+let ballSpeedY = 5;
+
+// Placar
+let playerScore = 0;
+let botScore = 0;
+
+// Controle por toque
+canvas.addEventListener("touchmove", (event) => {
+    const touch = event.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    playerY = touch.clientY - rect.top - paddleHeight / 2;
+
+    if (playerY < 0) playerY = 0;
+    if (playerY > canvas.height - paddleHeight)
+        playerY = canvas.height - paddleHeight;
+});
+
+function drawTableLines() {
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 4;
+    ctx.setLineDash([20, 15]);
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function drawPaddle(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(x, y, paddleWidth, paddleHeight, 20);
+    ctx.fill();
+}
+
+function drawBall() {
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, ballSize, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function moveBall() {
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+
+    // Rebate paredes
+    if (ballY < 0 || ballY > canvas.height) ballSpeedY *= -1;
+
+    // Player
+    if (ballX < paddleWidth + 10 &&
+        ballY > playerY &&
+        ballY < playerY + paddleHeight) {
+        ballSpeedX *= -1.1;
+        ballSpeedY += (Math.random() - 0.5) * 3;
+    }
+
+    // Bot
+    if (ballX > canvas.width - paddleWidth - 10 &&
+        ballY > botY &&
+        ballY < botY + paddleHeight) {
+        ballSpeedX *= -1.1;
+        ballSpeedY += (Math.random() - 0.5) * 3;
+    }
+
+    // Pontuação
+    if (ballX < 0) {
+        botScore++;
+        resetBall();
+    }
+    if (ballX > canvas.width) {
+        playerScore++;
+        resetBall();
+    }
+}
+
+function resetBall() {
+    ballX = canvas.width / 2;
+    ballY = canvas.height / 2;
+    ballSpeedX = 5 * (Math.random() > 0.5 ? 1 : -1);
+    ballSpeedY = 5 * (Math.random() > 0.5 ? 1 : -1);
+}
+
+// Bot segue a bola
+function moveBot() {
+    if (ballY < botY + paddleHeight / 2) botY -= 4;
+    else botY += 4;
+
+    botY = Math.max(0, Math.min(botY, canvas.height - paddleHeight));
+}
+
+function drawScore() {
+    ctx.font = Math.floor(canvas.width * 0.1) + "px Arial";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(playerScore, canvas.width / 2 - 60, 80);
+    ctx.fillText(botScore, canvas.width / 2 + 40, 80);
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawTableLines();
+    moveBall();
+    moveBot();
+    drawPaddle(10, playerY, "#ff3333");
+    drawPaddle(canvas.width - paddleWidth - 10, botY, "#3333ff");
+    drawBall();
+    drawScore();
+
+    requestAnimationFrame(gameLoop);
+}
+gameLoop();
+
+</script>
+
 </body>
 </html>
